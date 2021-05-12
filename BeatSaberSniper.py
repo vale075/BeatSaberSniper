@@ -24,7 +24,7 @@ def get_path():
 path = get_path()
 
 while True:
-    player_id = input("What is the player's id or scoresaber's url? ").strip("https://new.scoresaber.com/u/").rsplit("&")[0].rsplit("/")[0] #"76561198410694791"
+    player_id = input("What is the player's id or scoresaber's url? ").strip("https://new.scoresaber.com/u/").rsplit("&")[0].rsplit("/")[0]
     player_profile = requests.get(f"https://new.scoresaber.com/api/player/{player_id}/full").json()
     if 'error' in player_profile:
         print(f"ERROR: Invalid url/player id, got '{player_id}'")
