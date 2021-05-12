@@ -25,61 +25,67 @@ path = get_path()
 
 while True:
     player_id = input("What is the player's id or scoresaber's url? ").strip("https://new.scoresaber.com/u/").rsplit("&")[0].rsplit("/")[0] #"76561198410694791"
-    player_profile = requests.get("https://new.scoresaber.com/api/player/{}/full".format(player_id)).json()
+    player_profile = requests.get(f"https://new.scoresaber.com/api/player/{player_id}/full").json()
     if 'error' in player_profile:
-        print("ERROR: Invalid url/player id, but got '{}'".format(player_id))
+        print(f"ERROR: Invalid url/player id, got '{player_id}'")
         continue
     break
+
 player_name = player_profile["playerInfo"]["playerName"]
-max_song_amount = player_profile["scoreStats"]["totalPlayCount"]
-print("The player's name is '{}', he played {} songs.".format(player_name, max_song_amount))
+max_play_amount = player_profile["scoreStats"]["totalPlayCount"]
+print(f"The player's name is '{player_name}', he did {max_play_amount} plays.")
 
 
 while True:
-    sort_n = input("How do you want to sort the songs? (0: top; 1: recent) ")
+    sort_n = input("How do you want to sort the plays? (0: top; 1: recent) ")
     if sort_n in ["0", "1"]:
         break
-    print("ERROR: Invalid sort, expected '0' or '1', but got '{}'".format(sort_n))
+    print(f"ERROR: Invalid sort, expected '0' or '1', but got '{sort_n}'")
 sort_n = int(sort_n)
 sort = ["top", "recent"][sort_n]
 
 
 while True:
-    song_amount = input("How many songs do you want to include? ")
+    play_amount = input("How many plays do you want to include? ")
     try:
-        song_amount = int(song_amount)
+        play_amount = int(play_amount)
         break
     except:
-        print("ERROR: Invalid amount, expected an integer, but got '{}'".format(song_amount))
+        print(f"ERROR: Invalid amount, expected an integer, but got '{play_amount}'")
 
-if song_amount > max_song_amount:
-    print("'{}' didn't played that many songs, defaulted to the max amount of {}".format(player_name, max_song_amount))
-    song_amount = max_song_amount
-song_remaining = song_amount
+if play_amount > max_play_amount:
+    print(f"'{player_name}' didn't do that many plays, defaulted to the max amount of {max_play_amount}")
+    play_amount = max_play_amount
+play_remaining = play_amount
 
 
-songs = []
-for i in range(1, (song_amount-1)//(8)+2):
-    print(f"Requesting {(i*8 if song_remaining//8 > 0 else song_amount)}/{song_amount}")
-    url = "https://new.scoresaber.com/api/player/{}/scores/{}/{}".format(player_id, sort, i)
+plays = []
+for i in range(1, (play_amount-1)//(8)+2):
+    print(f"Requesting {(i*8 if play_remaining//8 > 0 else play_amount)}/{play_amount}")
+    url = f"https://new.scoresaber.com/api/player/{player_id}/scores/{sort}/{i}"
     page = requests.get(url).json()['scores']
 
-    for i in range(8 if song_remaining//8 > 0 else song_remaining):
-        songs.append({"songName": page[i]["songName"], "hash": page[i]["songHash"]})
-        song_remaining -= 1
+    for y in page:
+        plays.append({
+            "songName": y["songName"],
+            "hash": y["songHash"],
+            "difficulties":[{
+                    "characteristic":y["difficultyRaw"].split("_")[2].replace("Solo",""),
+                    "name":y["difficultyRaw"].split("_")[1]
+            }]})
+        play_remaining -= 1
 
 
-pl_title = '{} {} {} songs'.format(player_name, song_amount, sort)
+pl_title = f'"{player_name}" {sort} {play_amount} plays'
 playlist = {
     'playlistTitle': pl_title,
-    'playlistAuthor': 'Scoresaber Scraper',
-    'playlistDescription': 'Scoresaber Scraper - {} {} plays of "{}"'.format(song_amount, sort, player_name),
-    'songs': songs
+    'playlistAuthor': 'BeatSaberSniper',
+    'playlistDescription': f'BeatSaberSniper by vale075 - This playlist contains the {play_amount} {sort} plays of "{player_name}"',
+    'songs': plays
 }
 
-file_path = path + pl_title + ".bplist"
-print(file_path)
+file_path = path + f"{player_id} {sort} {play_amount} plays" + ".bplist"
 with open(file_path, "w") as file:
     json.dump(playlist, file)
 
-print("Done, your file is named {}.bplist".format(pl_title))
+print(f"Done, your file is in {file_path}")
