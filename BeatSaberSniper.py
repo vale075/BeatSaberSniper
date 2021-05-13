@@ -5,6 +5,12 @@ from PIL import Image
 from io import BytesIO
 from base64 import b64encode, b64decode
 from time import strftime, gmtime
+from tkinter import Tk     # from tkinter import Tk for Python 3.x
+from tkinter.filedialog import askdirectory
+from ctypes import windll
+
+windll.shcore.SetProcessDpiAwareness(1)
+Tk().withdraw()
 
 class player():
     def __init__(self, id: str = None) -> None:
@@ -21,7 +27,12 @@ class player():
 
     def get_id(self) -> None:
         while True:
-            id = input("What is the player's id or scoresaber's url? ").strip("https://new.scoresaber.com/u/").rsplit("&")[0].rsplit("/")[0]
+            id = input("What is the player's id or scoresaber's url? ")
+            if id == "teste":
+                id = "76561198141584046"
+            else:
+                id = id.strip("https://new.scoresaber.com/u/").rsplit("&")[0].rsplit("/")[0]
+
             try:
                 self.get_profile(id)
                 break
@@ -97,16 +108,14 @@ def get_path() -> str:
             if path.exists(p):
                 return p
     
-    print("You haven't specified a path for your playlist folder or the path is invalid.")
     while True:
-        p = input("Where do you want the playlists to be created? ")
-        if p[-1] != "\\":
-            p += "\\"
+        print("You haven't specified a path for your playlist folder or the path is invalid.")
+        input("You will now be asked to choose where to create the playlist files. (press enter to continue)")
+        p = askdirectory() + "/"
         if path.exists(p):
             with open("Playlist path.txt", "w") as file:
                 file.write(p)
             return p
-        print("The path you specified is invalid or doesn't exist yet, please double check or creat the folders and try again.")
 
 def sniper_image(player: player) -> str:
     avatar = Image.open(BytesIO(player.get_avatar()))
