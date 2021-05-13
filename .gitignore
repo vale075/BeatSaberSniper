@@ -1,2 +1,6 @@
 Playlist path.txt
 .vscode
+
+dist
+build
+__pycache__
