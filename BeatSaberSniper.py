@@ -161,5 +161,5 @@ if __name__ == '__main__':
     with open(file_path, 'w') as file:
         dump(pl.export(), file)
 
-    print(f"\nDone!\nYour file is in {file_path}")
+    input(f"\nDone!\nYour file is in {file_path}\n(press enter to continue)")
 
